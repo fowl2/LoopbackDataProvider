@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.6.2": {
+      "GitVersion.MsBuild": {
+        "type": "Direct",
+        "requested": "[5.6.11, )",
+        "resolved": "5.6.11",
+        "contentHash": "/shfB5WcijlhK4eHU6wnIFCltd1J1kHpqp0lLGHjtyd6dVp4Xa8la2b2jazl0SfEoyZM4tVBaQLe6vFi6stoUw=="
+      },
+      "IsExternalInit": {
+        "type": "Direct",
+        "requested": "[1.0.1, )",
+        "resolved": "1.0.1",
+        "contentHash": "Md/buF2kqLI/bvmqEwtsCGXKmgbZBzJRW1vz38lyTZKjP4YMXOOSATOSbWg2+S+tlRbrM/8qp9qOBDtqLHBgBw=="
+      },
+      "Microsoft.CrmSdk.CoreAssemblies": {
+        "type": "Direct",
+        "requested": "[9.0.2.34, )",
+        "resolved": "9.0.2.34",
+        "contentHash": "tVWvTPiCQc1/giosbEl8eV51f9NatVyix+IugsCiksaG/dQAoxufNj2hWDCzP+Wz3ZWBPIZx5vY4lLvCVWHR+g=="
+      },
+      "Microsoft.CrmSdk.Data": {
+        "type": "Direct",
+        "requested": "[9.0.2.34, )",
+        "resolved": "9.0.2.34",
+        "contentHash": "GVZmuj0fdqVpKoFCsz8O46n7HbBRnoFUQUL6olrcCFAA9/zfJxNiiZXvGqYgMqTWxnmiPAFOx18NMDvuNNpW/g==",
+        "dependencies": {
+          "Microsoft.CrmSdk.CoreAssemblies": "9.0.2"
+        }
+      }
+    }
+  }
+}

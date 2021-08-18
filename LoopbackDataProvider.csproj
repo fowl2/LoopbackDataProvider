@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net462</TargetFramework>
+		<LangVersion>9.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<RootNamespace>LoopbackDataProvider</RootNamespace>
+		<AssemblyName>LoopbackDataProvider</AssemblyName>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>5.0</AnalysisLevel>
+		<DebugType>pdbonly</DebugType>
+		<EmbedAllSources>true</EmbedAllSources>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IsExternalInit" Version="1.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>contentfiles</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies">
+			<Version>9.0.2.34</Version>
+			<IncludeAssets>compile</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="GitVersion.MsBuild" Version="5.6.11">
+			<IncludeAssets>build</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CrmSdk.Data" Version="9.0.2.34" />
+	</ItemGroup>
+	
+</Project>
