@@ -20,7 +20,7 @@ namespace LoopbackDataProvider
         private const string Query = "Query";
         private const string Target = "Target";
         private const string ColumnSet = "ColumnSet";
-        private const string Entity = "Entity";
+        private const string BusinessEntity = "BusinessEntity";
         private const string BusinessEntityCollection = "BusinessEntityCollection";
 
         public void Execute(IServiceProvider serviceProvider)
@@ -43,13 +43,10 @@ namespace LoopbackDataProvider
             foreach (var item in context.SharedVariables)
                 tracing.Trace($"SV: {item.Key}: {item.Value} ({item.Value?.GetType()})");
 
-
-            var retriever = serviceProvider.Get<IEntityDataSourceRetrieverService>()
-                   ?? throw new ArgumentException($"Get<{nameof(IEntityDataSourceRetrieverService)}>() returned null");
-            var dataSource = retriever.RetrieveEntityDataSource()
-                ?? throw new ArgumentException("RetrieveEntityDataSource() returned null");
-
-            var targetEntityName = dataSource.Attributes.First(x => x.Value is string).Value.ToString();
+            //var retriever = serviceProvider.Get<IEntityDataSourceRetrieverService>()
+            //       ?? throw new ArgumentException($"Get<{nameof(IEntityDataSourceRetrieverService)}>() returned null");
+            //var dataSource = retriever.RetrieveEntityDataSource()
+            //    ?? throw new ArgumentException("RetrieveEntityDataSource() returned null");
 
             var entityMetadata = service.GetEntityMetadata(context.PrimaryEntityName);
             var typeMapFactory = new DefaultTypeMapFactory();
@@ -72,7 +69,7 @@ namespace LoopbackDataProvider
                     });
 
                     var mappedEntity = ConversionExtensions.ConvertSchema(retrieveResponse.Entity, entityMap);
-                    context.OutputParameters["BusinessEntity"] = mappedEntity;
+                    context.OutputParameters[BusinessEntity] = mappedEntity;
                     return;
 
                 case "RetrieveMultiple":
@@ -137,6 +134,7 @@ namespace LoopbackDataProvider
                         ConcurrencyBehavior = deleteConcurrencyBehavior,
                     });
                     return;
+
                 default:
                     throw new NotImplementedException($"Message '{context.MessageName}'");
             }
