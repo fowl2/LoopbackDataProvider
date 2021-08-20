@@ -64,7 +64,7 @@ namespace LoopbackDataProvider
                     var relatedEntitiesQuery = (RelationshipQueryCollection)context.InputParameters[RelatedEntitiesQuery];
                     if (relatedEntitiesQuery.Any())
                         throw new NotImplementedException(RelatedEntitiesQuery);
-                    
+
                     var retrieveResponse = (RetrieveResponse)service.Execute(new RetrieveRequest
                     {
                         ColumnSet = ConversionExtensions.ConvertSchema(columnSet, entityMap),
@@ -72,7 +72,7 @@ namespace LoopbackDataProvider
                     });
 
                     var mappedEntity = ConversionExtensions.ConvertSchema(retrieveResponse.Entity, entityMap);
-                    context.OutputParameters[Entity] = mappedEntity;
+                    context.OutputParameters["BusinessEntity"] = mappedEntity;
                     return;
 
                 case "RetrieveMultiple":
@@ -100,8 +100,43 @@ namespace LoopbackDataProvider
                     return;
 
                 case "Create":
+                    var createEntityMap = EntityMapFactory.Create(entityMetadata, typeMapFactory, entityAlias: null);
+                    var createTarget = (Entity)context.InputParameters[Target];
+                    var createReponse = (CreateResponse)service.Execute(new CreateRequest
+                    {
+                        Target = ConversionExtensions.ConvertSchemaExternal(createTarget, createEntityMap),
+                    });
+                    context.OutputParameters[nameof(createReponse.id)] = createReponse.id;
+                    return;
+
                 case "Update":
+                    var updateEntityMap = EntityMapFactory.Create(entityMetadata, typeMapFactory, entityAlias: null);
+                    var updateTarget = (Entity)context.InputParameters[Target];
+
+                      tracing.Trace($"{updateTarget.LogicalName} {updateTarget.Id} ({string.Join(",", updateTarget.Attributes.Select(a => $"{a.Key}: {a.Value} ({a.Value?.GetType()?.Name})"))})");
+
+                    var convertedUpdateTarget = ConversionExtensions.ConvertSchemaExternal(updateTarget, updateEntityMap);
+                    tracing.Trace($"{convertedUpdateTarget.LogicalName} {convertedUpdateTarget.Id} ({string.Join(",", convertedUpdateTarget.Attributes.Select(a => $"{a.Key}: {a.Value} ({a.Value?.GetType()?.Name})"))})");
+
+                    var updateConcurrencyBehavior = (ConcurrencyBehavior)context.InputParameters[nameof(ConcurrencyBehavior)];
+                    var updateResponse = (UpdateResponse)service.Execute(new UpdateRequest
+                    {
+                        Target = convertedUpdateTarget,
+                        ConcurrencyBehavior = updateConcurrencyBehavior,
+                    });
+                    return;
+
                 case "Delete":
+                    var deleteEntityMap = EntityMapFactory.Create(entityMetadata, typeMapFactory, entityAlias: null);
+                    var deleteTarget = (EntityReference)context.InputParameters[Target];
+                    var deleteConcurrencyBehavior = (ConcurrencyBehavior)context.InputParameters[nameof(ConcurrencyBehavior)];
+
+                    var deleteResponse = (DeleteResponse)service.Execute(new DeleteRequest
+                    {
+                        Target = ConversionExtensions.ConvertSchema(deleteTarget, deleteEntityMap),
+                        ConcurrencyBehavior = deleteConcurrencyBehavior,
+                    });
+                    return;
                 default:
                     throw new NotImplementedException($"Message '{context.MessageName}'");
             }

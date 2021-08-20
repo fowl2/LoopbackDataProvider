@@ -87,5 +87,21 @@ namespace LoopbackDataProvider
 
             return convertedEntity;
         }
+
+        public static Entity ConvertSchemaExternal(Entity xrmEntity, EntityMap entityMap)
+        {
+            Entity convertedEntity = new(entityMap.NameMap.ExternalName, xrmEntity.Id);
+
+            foreach (AttributeMap attribute in entityMap.AttributeMap)
+            {
+                if (!xrmEntity.Attributes.TryGetValue(attribute.NameMap.XrmName, out var xrmValue))
+                    continue;
+
+                // TODO: value conversion?
+                convertedEntity.Attributes[attribute.NameMap.ExternalName] = xrmValue;
+            }
+
+            return convertedEntity;
+        }
     }
 }
