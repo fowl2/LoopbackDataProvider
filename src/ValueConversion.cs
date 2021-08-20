@@ -8,62 +8,45 @@ using System.Linq;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Data.Extensions;
 using Microsoft.Xrm.Sdk.Messages;
-
 namespace LoopbackDataProvider
 {
-    sealed class Mapping
+    /// <summary>
+    /// WIP
+    /// </summary>
+    class ValueConversion
     {
-        internal static Mapping Create(IOrganizationService service, string primaryEntityName)
-        {
-            var typeMapFactory = new DefaultTypeMapFactory();
-            var queryMapFactory = new QueryMapFactory(service, typeMapFactory);
-            return new(queryMapFactory);
-        }
-
-        readonly QueryMapFactory queryMapFactory;
-
-        Mapping(QueryMapFactory queryMapFactory)
-        {
-            this.queryMapFactory = queryMapFactory;
-        }
-
         internal IEnumerable<KeyValuePair<string, object>> ConvertSchema(IEnumerable<KeyValuePair<string, object>> kvps)
             => kvps.Select(ip => new KeyValuePair<string, object>(ip.Key, ConvertSchema(ip.Value)));
 
+
         object ConvertSchema(object obj)
-            => obj switch
-            {
-                EntityReference entityReference
-                    => ConvertSchema(entityReference),
+        => obj switch
+        {
+            EntityReference entityReference
+                => ConvertSchema(entityReference),
 
-                Entity entity
-                    => ConvertSchema(entity),
+            Entity entity
+                => ConvertSchema(entity),
 
-                EntityCollection entityCollection
-                    => ConvertSchema(entityCollection),
+            EntityCollection entityCollection
+                => ConvertSchema(entityCollection),
 
-                AttributeCollection attributeCollection
-                    => ConvertSchema(attributeCollection),
+            AttributeCollection attributeCollection
+                => ConvertSchema(attributeCollection),
 
-                QueryExpression queryExpression
-                    => ConvertSchema(queryExpression),
+            QueryExpression queryExpression
+                => ConvertSchema(queryExpression),
 
-                _ => obj,
-            };
+            _ => obj,
+        };
 
         EntityCollection ConvertSchema(EntityCollection entityCollection)
         {
             throw new NotImplementedException();
             //var retval = queryExpression.ConvertSchema(queryMap);
-           // return retval;
+            // return retval;
         }
 
-        QueryExpression ConvertSchema(QueryExpression queryExpression)
-        {
-            var queryMap = queryMapFactory.Create(queryExpression);
-            var retval = queryExpression.ConvertSchema(queryMap);
-            return retval;
-        }
 
         object ConvertSchema(object obj, string logicalName, string newLogicalName)
             => obj switch
@@ -111,6 +94,8 @@ namespace LoopbackDataProvider
         }
 
 
+
+
         public static EntityReference ReplaceEntityLogicalNames(EntityReference entityReference, string logicalName, string newLogicalName)
             => new()
             {
@@ -156,8 +141,8 @@ namespace LoopbackDataProvider
         {
             throw new NotImplementedException();
             var retval = new AttributeCollection();
-         //   retval.AddRange(
-        //        ReplaceEntityLogicalNames(attributeCollection.AsEnumerable(), logicalName, newLogicalName));
+            //   retval.AddRange(
+            //        ReplaceEntityLogicalNames(attributeCollection.AsEnumerable(), logicalName, newLogicalName));
             return retval;
         }
 

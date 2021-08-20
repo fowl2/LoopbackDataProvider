@@ -16,6 +16,13 @@ namespace LoopbackDataProvider
 {
     public sealed class LoopbackDataProviderPlugin : IPlugin
     {
+        private const string RelatedEntitiesQuery = "RelatedEntitiesQuery";
+        private const string Query = "Query";
+        private const string Target = "Target";
+        private const string ColumnSet = "ColumnSet";
+        private const string Entity = "Entity";
+        private const string BusinessEntityCollection = "BusinessEntityCollection";
+
         public void Execute(IServiceProvider serviceProvider)
         {
             var context = serviceProvider.Get<IPluginExecutionContext>()
@@ -44,87 +51,60 @@ namespace LoopbackDataProvider
 
             var targetEntityName = dataSource.Attributes.First(x => x.Value is string).Value.ToString();
 
-
-            var mapping = Mapping.Create(service, context.PrimaryEntityName);
-
             var entityMetadata = service.GetEntityMetadata(context.PrimaryEntityName);
-
             var typeMapFactory = new DefaultTypeMapFactory();
-
 
             switch (context.MessageName)
             {
                 case "Retrieve":
-                    var entityMap =EntityMapFactory.Create(entityMetadata, typeMapFactory, "mappingEntityAlias");
-                    
-                    var target = (EntityReference)context.InputParameters["Target"];
-                    var columnSet = (ColumnSet)context.InputParameters["ColumnSet"];
-                    var relatedEntitiesQuery = (RelationshipQueryCollection)context.InputParameters["RelatedEntitiesQuery"];
-                    if (relatedEntitiesQuery.Any())
-                        throw new NotImplementedException("RelatedEntitiesQuery");
-                    
-                    var mappedTarget = Mapping.ReplaceEntityLogicalNames(target, context.PrimaryEntityName, entityMetadata.ExternalName);
-                    var mappedColumns = columnSet.Columns.Select(entityMap.MapAttributeNameExternal).ToArray();
+                    var entityMap = EntityMapFactory.Create(entityMetadata, typeMapFactory, entityAlias: null);
 
-                    var retrieveResponse = (RetrieveResponse)service.Execute(new RetrieveRequest { 
-                        
-                        ColumnSet = new (mappedColumns),
-                        Target = mappedTarget,
+                    var target = (EntityReference)context.InputParameters[Target];
+                    var columnSet = (ColumnSet)context.InputParameters[ColumnSet];
+                    var relatedEntitiesQuery = (RelationshipQueryCollection)context.InputParameters[RelatedEntitiesQuery];
+                    if (relatedEntitiesQuery.Any())
+                        throw new NotImplementedException(RelatedEntitiesQuery);
+                    
+                    var retrieveResponse = (RetrieveResponse)service.Execute(new RetrieveRequest
+                    {
+                        ColumnSet = ConversionExtensions.ConvertSchema(columnSet, entityMap),
+                        Target = ConversionExtensions.ConvertSchema(target, entityMap),
                     });
 
-                    var mappedEntity = retrieveResponse.Entity.ToEntity(entityMap);
-                    context.OutputParameters["Entity"] = mappedEntity;
+                    var mappedEntity = ConversionExtensions.ConvertSchema(retrieveResponse.Entity, entityMap);
+                    context.OutputParameters[Entity] = mappedEntity;
                     return;
-                    
+
                 case "RetrieveMultiple":
-                    
                     var queryMapFactory = new QueryMapFactory(service, typeMapFactory);
 
-                    var query = (QueryExpression)context.InputParameters["Query"];
+                    var query = (QueryExpression)context.InputParameters[Query];
                     var queryMap = queryMapFactory.Create(query);
-                    
+
+                    foreach (var attr in queryMap.PrimaryEntityMap.AttributeMap)
+                        tracing.Trace($"attr ({attr.IsPrimaryAttributeId}) : {attr.NameMap.ExternalName} -> {attr.NameMap.XrmName}");
+
                     var convertedQuery = query.ConvertSchema(queryMap);
 
                     tracing.Trace($"{nameof(convertedQuery)}: {convertedQuery.EntityName} ({string.Join(", ", convertedQuery.ColumnSet.Columns)})");
                     tracing.Trace($"{nameof(convertedQuery)}: Conditions: {convertedQuery.Criteria.Conditions.Count()}");
 
                     var retrieveMultipleResponse = service.RetrieveMultiple(convertedQuery);
-                    var mappedEntities = new EntityCollection();
-                     
-                    mappedEntities.Entities.AddRange(retrieveMultipleResponse.Entities.Select(x=> x.ToEntity(queryMap.PrimaryEntityMap)));
+
+                    var mappedEntities = ConversionExtensions.ConvertSchema(retrieveMultipleResponse, queryMap);
 
                     foreach (var item in mappedEntities.Entities)
-                    {
-                        tracing.Trace($"{item.LogicalName} {item.Id} ({string.Join(",", item.Attributes.Select(a=> $"{a.Key}: {a.Value} ({a.Value?.GetType()?.Name})"))})");
-                    }
+                        tracing.Trace($"{item.LogicalName} {item.Id} ({string.Join(",", item.Attributes.Select(a => $"{a.Key}: {a.Value} ({a.Value?.GetType()?.Name})"))})");
 
-                    mappedEntities.MoreRecords = retrieveMultipleResponse.MoreRecords;
-                    mappedEntities.MinActiveRowVersion = retrieveMultipleResponse.MinActiveRowVersion;
-                    mappedEntities.TotalRecordCountLimitExceeded = retrieveMultipleResponse.TotalRecordCountLimitExceeded;
-                    mappedEntities.TotalRecordCount = retrieveMultipleResponse.TotalRecordCount;
-                    mappedEntities.PagingCookie = retrieveMultipleResponse.PagingCookie;
-
-                    context.OutputParameters["BusinessEntityCollection"] = mappedEntities; 
+                    context.OutputParameters[BusinessEntityCollection] = mappedEntities;
                     return;
 
                 case "Create":
                 case "Update":
                 case "Delete":
                 default:
-                    break;
+                    throw new NotImplementedException($"Message '{context.MessageName}'");
             }
-
-            var request = new OrganizationRequest(context.MessageName);
-
-            request.Parameters.AddRange(
-                mapping.ConvertSchema(context.InputParameters));
-
-            var response = service.Execute(request);
-
-            context.OutputParameters.AddRange(
-                mapping.ConvertSchema(response.Results));
         }
-
-
     }
 }
