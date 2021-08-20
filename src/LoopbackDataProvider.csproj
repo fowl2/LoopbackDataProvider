@@ -20,12 +20,12 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>contentfiles</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies">
-			<Version>9.0.2.34</Version>
+		<PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.34">
 			<IncludeAssets>compile</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.CrmSdk.Data" Version="9.0.2.34">
+			<IncludeAssets>compile</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="GitVersion.MsBuild" Version="5.6.11">
