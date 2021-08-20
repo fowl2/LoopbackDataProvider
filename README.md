@@ -1,6 +1,6 @@
 # Intro
 
-This is a custom Microsoft Dataverse [Virtual Table Data Provider](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/virtual-entities/get-started-ve) plugin that just forwards all requests to another entity in the same enviroment, mapping all the column/attribute names.
+This is a custom Microsoft Dataverse [Virtual Table Data Provider](https://docs.microsoft.com/en-us/powerapps/developer/data-platform/virtual-entities/get-started-ve) plugin that mirrors another entity in the same environment, mapping all the column/attribute names.
 
 Might be useful if you want to convert a virtual entity into a real entity, keep the option open in future, or as a  template/sample data provider plugin.
 
